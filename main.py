@@ -3,7 +3,7 @@ from mazevisualizer import MazeVisualizer
 
 if __name__ == "__main__":
     # 1. Configuramos el producto
-    ancho, alto = 50, 50
+    ancho, alto = 15, 15
     maze = MazeGenerator(ancho, alto, seed=123)
 
     # 2. Preparamos el punto de inicio
