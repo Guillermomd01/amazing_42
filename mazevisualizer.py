@@ -6,6 +6,8 @@ except ImportError:
     print("Error importing mlx")
     sys.exit(1)
 
+import random
+
 
 class MazeVisualizer():
     def __init__(self, maze, tile_size=30):
@@ -33,11 +35,11 @@ class MazeVisualizer():
     def _draw_line(self, x1, y1, x2, y2, color):
         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
         if x1 == x2:  # Línea vertical
-            for y in range(min(y1, y2), max(y1, y2)):
+            for y in range(min(y1, y2), max(y1, y2) + 1):
                 self.mlx.mlx_pixel_put(
                     self.mlx_ptr, self.win_ptr, x1, y, color)
         elif y1 == y2:  # Línea horizontal
-            for x in range(min(x1, x2), max(x1, x2)):
+            for x in range(min(x1, x2), max(x1, x2) + 1):
                 self.mlx.mlx_pixel_put(
                     self.mlx_ptr, self.win_ptr, x, y1, color)
 
@@ -90,6 +92,33 @@ class MazeVisualizer():
         if self.show_solution:
             self.draw_path()
 
+    def change_wall_color(self) -> None:
+        """
+        Cambair el color de las paredes aleatoriamente
+
+        :param self: Description
+        """
+        colors = [
+            0xFF8C00,
+            0x8A2BE2,
+            0xFF00FF,
+            0xFFD700,
+            0x1E90FF,
+            0xFF69B4,
+            0x32CD32,
+            0x4B0082,
+            0x7FFF00,
+            0x0000FF
+        ]
+        wall = random.choice(colors)
+        while wall == self.wall_color:
+            wall = random.choice(colors)
+        self.wall_color = wall
+        self.render()
+        if self.show_solution:
+            self.show_solution = False
+            self.draw_path()
+
     def handle_keys(self, keycode, param=None):
         """
         Registra los movimientos por teclado y actua en consecuencia
@@ -110,6 +139,9 @@ class MazeVisualizer():
             print("Regenerating maze...")
             self.maze.regenerate()
             self.render()
+        # C: cambiar color de walls
+        elif keycode == 99:
+            self.change_wall_color()
         return 0
 
     def run(self):
