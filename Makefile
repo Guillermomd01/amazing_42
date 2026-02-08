@@ -2,7 +2,7 @@ VENV = venv
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 
-MAIN = main.py # cambiar por a_maze_ing.py
+MAIN = a_maze_ing.py
 CONFIG_FILE = config.txt
 REQUIREMENTS = requirements.txt
 FILES = mazevisualizer.py mazegenerator.py
