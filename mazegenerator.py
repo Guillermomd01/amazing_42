@@ -154,9 +154,9 @@ class MazeGenerator():
             [15 for _ in range(self.height)] for _ in range(self.width)]
         self.visited = [
             [False for _ in range(self.height)] for _ in range(self.width)]
-        self._inject_42()  # Aseguramos el sello del 42
+        self._inject_42()
         self.stack = [self.entry]
-        self.generate()  # Ejecuta el algoritmo de nuevo
+        self.visited[self.entry[0]][self.entry[1]] = True
 
     def display_numeric(self):
         """Muestra la matriz cruda de bits en hexadecimal."""
