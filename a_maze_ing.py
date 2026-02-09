@@ -1,19 +1,20 @@
 from mazegenerator import MazeGenerator
-from mazevisualizer import MazeVisualizer
+from mazevisualizerprueba import MazeVisualizer
 import random
 
 
 if __name__ == "__main__":
-    # 1. Configuramos el producto
-    maze = MazeGenerator(15, 15, seed=random.randint(0, 999))
+    # 1. Creamos el objeto, pero NO llamamos a maze.generate() todavía
+    maze = MazeGenerator(20, 20, seed=random.randint(0, 999))
 
-    # generacion txt
-    # 4. Validamos el resultado
-    maze.generate()
+    # 2. El visualizador se encargará de llamar a generate_step() frame a frame
+    visualizer = MazeVisualizer(maze, tile_size=25)
+
+    print("Iniciando motor gráfico... Pulsa ESC para salir, R para reiniciar.")
+    visualizer.run_animated()
+
+    """
     maze.display_numeric()
     maze.display_ascii()
     maze.save("maze_test.txt")
-    print("\n [OK]")
-
-    visualizer = MazeVisualizer(maze, tile_size=25)
-    visualizer.run_animated()
+    print("\n [OK]")"""
