@@ -1,24 +1,19 @@
 from mazegenerator import MazeGenerator
 from mazevisualizer import MazeVisualizer
+import random
+
 
 if __name__ == "__main__":
     # 1. Configuramos el producto
-    ancho, alto = 15, 15
-    maze = MazeGenerator(ancho, alto, seed=123)
+    maze = MazeGenerator(15, 15, seed=random.randint(0, 999))
 
-    # 2. Preparamos el punto de inicio
-    # Marcamos la entrada (0,0) como visitada y la metemos en la pila
-    maze.visited[0][0] = True
-    maze.stack.append((0, 0))
-
-    # 3. ¡Arrancamos el motor!
-    maze.generate()
     # generacion txt
-    maze.save("maze_test.txt")
-    print("\n [OK]")
     # 4. Validamos el resultado
+    maze.generate()
     maze.display_numeric()
     maze.display_ascii()
+    maze.save("maze_test.txt")
+    print("\n [OK]")
 
     visualizer = MazeVisualizer(maze, tile_size=25)
-    visualizer.run()
+    visualizer.run_animated()
