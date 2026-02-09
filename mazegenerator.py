@@ -56,33 +56,50 @@ class MazeGenerator():
                 # y el solver lo ignoren
                 self.visited[nx][ny] = True
 
+    def generate_step(self) -> bool:
+        """
+        Ejecuta un único paso del algoritmo.
+        Devuelve True si el laberinto sigue en construcción,
+        False si ha terminado.
+        """
+        if not self.stack:
+            return False
+
+        cx, cy = self.stack[-1]
+        neighbors = []
+
+        # Direcciones: 1:N, 2:E, 4:S, 8:W
+        directions = [
+            (0, -1, 1, 4),
+            (1, 0, 2, 8),
+            (0, 1, 4, 1),
+            (-1, 0, 8, 2)]
+
+        for dx, dy, bit, opp in directions:
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < self.width and 0 <= ny < self.height:
+                if not self.visited[nx][ny]:
+                    neighbors.append((nx, ny, bit, opp))
+
+        if neighbors:
+            nx, ny, bit, opp = self._rng.choice(neighbors)
+            self.grid[cx][cy] &= ~bit
+            self.grid[nx][ny] &= ~opp
+            self.visited[nx][ny] = True
+            self.stack.append((nx, ny))
+        else:
+            self.stack.pop()
+
+        return True
+
     def generate(self):
-        while self.stack:
-            curr_x, curr_y = self.stack[-1]
-            self.visited[curr_x][curr_y] = True
+        """
+        Generación instantánea
 
-            neighbours = []
-            # 1: Norte, 2: Este, 4: Sur, 8: Oeste
-            directions = [
-                (curr_x, curr_y - 1, 1, 4),
-                (curr_x + 1, curr_y, 2, 8),
-                (curr_x, curr_y + 1, 4, 1),
-                (curr_x - 1, curr_y, 8, 2)
-            ]
-
-            for nx, ny, bit, op_bit in directions:
-                if 0 <= nx < self.width and 0 <= ny < self.height:
-                    if not self.visited[nx][ny]:
-                        neighbours.append((nx, ny, bit, op_bit))
-
-            if neighbours:
-                nx, ny, bit, op_bit = self._rng.choice(neighbours)
-                self.grid[curr_x][curr_y] &= ~bit
-                self.grid[nx][ny] &= ~op_bit
-                self.visited[nx][ny] = True
-                self.stack.append((nx, ny))
-            else:
-                self.stack.pop()
+        :param self: Description
+        """
+        while self.generate_step():
+            pass
 
     def solve(self):
         """Encuentra el camino desde entry hasta exit usando DFS."""
@@ -94,7 +111,7 @@ class MazeGenerator():
             if (cx, cy) == self.exit:
                 return path
 
-            if (cx, cy) in visited:
+            if (cx, cy) not in visited:
                 visited.add((cx, cy))
             # Norte (1), Este (2), Sur (4), Oeste (8)
             moves = [
@@ -108,7 +125,8 @@ class MazeGenerator():
                 if 0 <= nx < self.width and 0 <= ny < self.height:
                     # Si NO hay pared en esa dirección (bit no activo)
                     if not (self.grid[cx][cy] & bit):
-                        stack.append(((nx, ny), path + direction))
+                        if (nx, ny) not in visited:
+                            stack.append(((nx, ny), path + direction))
         return "NO_SOLUTION"
 
     def save(self, filename: str):
