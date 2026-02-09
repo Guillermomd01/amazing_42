@@ -43,28 +43,16 @@ class MazeVisualizer():
         self.entry_color = 0x00FF00
         self.exit_color = 0xFF0000
         self.solu_color = 0x00FFFF
+        self.render()
 
     def _put_pixel_fast(self, x, y, color):
         """Escribe directamente en la memoria de la imagen
         (Rendimiento Extremo)"""
-        if x < 0 or x >= self.win_w or y < 0 or y >= self.win_h:
-            return
-
-        # Calcular la posición en el array de bytes
-        index = (y * self.size_line) + (x * 4)
-
-        # Descomponemos el color en bytes (Blue, Green, Red, Alpha)
-        # Nota: MLX suele usar Little Endian (BGRA)
-        b = color & 0xFF
-        g = (color >> 8) & 0xFF
-        r = (color >> 16) & 0xFF
-        a = 0
-
-        # Escribimos en el buffer
-        self.img_data[index] = b
-        self.img_data[index + 1] = g
-        self.img_data[index + 2] = r
-        self.img_data[index + 3] = a
+        if 0 <= x < self.win_w and 0 <= y < self.win_h:
+            idx = (y * self.size_line) + (x * 4)
+            self.img_data[idx] = color & 0xFF
+            self.img_data[idx + 1] = (color >> 8) & 0xFF
+            self.img_data[idx + 2] = (color >> 16) & 0xFF
 
     def _clear_image(self):
         """Limpia el lienzo (rellena de negro)"""
@@ -73,16 +61,8 @@ class MazeVisualizer():
         # podemos no hacer nada si sobreescribimos todo
         # O usar un bucle simple si es necesario.
         # Por rendimiento, asumimos redibujado.
-        pass
-
-    def _draw_line(self, x1, y1, x2, y2, color):
-        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
-        if x1 == x2:  # Línea vertical
-            for y in range(min(y1, y2), max(y1, y2) + 1):
-                self._put_pixel_fast(x1, y, color)
-        elif y1 == y2:  # Línea horizontal
-            for x in range(min(x1, x2), max(x1, x2) + 1):
-                self._put_pixel_fast(x, y1, color)
+        for i in range(len(self.img_data)):
+            self.img_data[i] = 0
 
     def draw_path(self):
         "Dibuja la ruta premium de solución"
@@ -109,45 +89,27 @@ class MazeVisualizer():
             self._draw_line(start_x, start_y, end_x, end_y, self.solu_color)
 
     def render(self):
-        # 1. Limpiamos la imagen (Pintamos todo de negro primero es una opción,
-        # pero aquí simplemente dibujamos encima)
-        # Para limpiar "bien", podríamos rellenar self.img_data con ceros,
-        # pero para el MVP basta con asegurar que dibujamos lo necesario.
-
-        # Limpieza manual rápida (opcional, consume CPU pero asegura limpieza)
-        # self.img_data[:] = bytes(len(self.img_data))
-
-        # 2. Dibujamos el laberinto en el BUFFER (No en la ventana)
+        self._clear_image()
         for y in range(self.maze.height):
             for x in range(self.maze.width):
-                px = x * self.tile_size
-                py = y * self.tile_size
-                cell_value = self.maze.grid[x][y]
+                px, py = x * self.tile_size, y * self.tile_size
+                val = self.maze.grid[x][y]
+                # Dibujar paredes
+                if val & 1:  # Norte
+                    for i in range(self.tile_size):
+                        self._put_pixel(px + i, py, self.wall_color)
+                if val & 2:  # Este
+                    for i in range(self.tile_size):
+                        self._put_pixel(
+                            px + self.tile_size - 1, py + i, self.wall_color)
+                if val & 4:  # Sur
+                    for i in range(self.tile_size):
+                        self._put_pixel(
+                            px + i, py + self.tile_size - 1, self.wall_color)
+                if val & 8:  # Oeste
+                    for i in range(self.tile_size):
+                        self._put_pixel(px, py + i, self.wall_color)
 
-                # Pared Norte
-                if cell_value & 1:
-                    self._draw_line(
-                        px, py, px + self.tile_size, py, self.wall_color)
-                # Pared Este
-                if cell_value & 2:
-                    self._draw_line(
-                        px + self.tile_size, py, px + self.tile_size, py +
-                        self.tile_size, self.wall_color)
-                # Pared Sur
-                if cell_value & 4:
-                    self._draw_line(
-                        px, py + self.tile_size, px + self.tile_size, py +
-                        self.tile_size, self.wall_color)
-                # Pared Oeste
-                if cell_value & 8:
-                    self._draw_line(
-                        px, py, px, py + self.tile_size, self.wall_color)
-
-        if self.show_solution:
-            self.draw_path()
-
-        # 3. EL GRAN FINAL: Empujamos la imagen completa
-        # a la ventana de una vez
         self.mlx.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, self.img, 0, 0)
 
@@ -168,16 +130,12 @@ class MazeVisualizer():
         Este es el 'corazón' de la animación. Se ejecuta en cada frame.
         """
         # Intentamos dar un paso en la generación
-        if self.maze.generate_step():
-            self.render()
-        else:
-            # Una vez terminado, podemos desactivar el hook
-            # para ahorrar energía
-            self.mlx.mlx_loop_hook(self.mlx_ptr, None, None)
-            print("Generación completada con éxito.")
+        if self.maze.stack:
+            if self.maze.generate_step():
+                self.render()
         return 0
 
-    def handle_keys(self, keycode, param=None):
+    def handle_keys(self, keycode, *args):
         # ESC
         if keycode == 53 or keycode == 65307:
             sys.exit(0)
@@ -186,7 +144,7 @@ class MazeVisualizer():
             self.show_solution = not self.show_solution
             self.render()
         # R: Regenerate
-        elif keycode == 114:
+        elif keycode == 114 or keycode == 31:
             print("Regenerating maze...")
             self.maze.regenerate()
             # Limpiamos buffer visual (truco rápido: pintar
@@ -194,7 +152,7 @@ class MazeVisualizer():
             # Para este MVP, simplemente redibujamos encima.
             self.render()
         # C: Change color wall
-        elif keycode == 99:
+        elif keycode == 99 or keycode == 46:
             self.change_wall_color()
         return 0
 
