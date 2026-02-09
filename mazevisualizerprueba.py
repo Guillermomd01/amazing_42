@@ -163,6 +163,20 @@ class MazeVisualizer():
         self.wall_color = wall
         self.render()
 
+    def animation_hook(self, param=None):
+        """
+        Este es el 'corazón' de la animación. Se ejecuta en cada frame.
+        """
+        # Intentamos dar un paso en la generación
+        if self.maze.generate_step():
+            self.render()
+        else:
+            # Una vez terminado, podemos desactivar el hook
+            # para ahorrar energía
+            self.mlx.mlx_loop_hook(self.mlx_ptr, None, None)
+            print("Generación completada con éxito.")
+        return 0
+
     def handle_keys(self, keycode, param=None):
         # ESC
         if keycode == 53 or keycode == 65307:
@@ -184,7 +198,7 @@ class MazeVisualizer():
             self.change_wall_color()
         return 0
 
-    def run(self):
+    def run_animated(self):
         self.mlx.mlx_key_hook(self.win_ptr, self.handle_keys, None)
-        self.render()
+        self.mlx.mlx_loop_hook(self.mlx_ptr, self.animation_hook, None)
         self.mlx.mlx_loop(self.mlx_ptr)
