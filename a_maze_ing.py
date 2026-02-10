@@ -1,13 +1,14 @@
 from mazegenerator import MazeGenerator
-from mazevisualizerprueba import MazeVisualizer
+from mazevisualizer import MazeVisualizer
 from parseo import MazeConfig
 
 if __name__ == "__main__":
     config = MazeConfig("config.txt")
 
     maze = MazeGenerator(
-        config.width, config.height, config.seed, config.exit,
-        config.is_perfect, config.entry)
+        config.width, config.height,
+        config.exit, config.is_perfect,
+        config.entry, config.seed)
     maze. generate()
     maze.display_numeric()
     maze.display_ascii()
