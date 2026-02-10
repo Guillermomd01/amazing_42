@@ -1,12 +1,15 @@
 import random
+from typing import Optional
 
 
 class MazeGenerator():
     def __init__(
         self, width: int,
-            height: int, seed: int,
-            exit=None, perfect: bool = True,
-            entry: tuple[int, int] = (0, 0)):
+            height: int,
+            exit: tuple[int, int],
+            perfect: bool = True,
+            entry: tuple[int, int] = (0, 0),
+            seed: Optional[int] = None):
         self.width = width
         self.height = height
         self.seed = seed
@@ -23,14 +26,17 @@ class MazeGenerator():
         self.stack = [self.entry]
 
     def _inject_42(self):
-        """Sella el número 42 buscando una ubicación que no pise la entrada/salida."""
+        """Sella el número 42 buscando una
+        ubicación que no pise la entrada/salida."""
         # Tamaño mínimo para que el dibujo quepa con margen
         min_w, min_h = 15, 10
         if self.width < min_w or self.height < min_h:
-            print(f"Error: Tamaño {self.width}x{self.height} insuficiente para el '42'.")
+            print(
+                f"Error: Tamaño {self.width}x{self.height} "
+                f"insuficiente para el '42'.")
             return
 
-        # Coordenadas relativas que forman el dibujo del "42" 
+        # Coordenadas relativas que forman el dibujo del "42"
         puntos_relativos = [
             # El 4
             (0, 0), (0, 1), (0, 2), (1, 2),
@@ -65,7 +71,7 @@ class MazeGenerator():
                 if (nx, ny) == self.entry or (nx, ny) == self.exit:
                     choque = True
                     break
-            
+
             if not choque:
                 offset_elegido = (off_x, off_y)
                 break
@@ -77,11 +83,12 @@ class MazeGenerator():
                 nx, ny = off_x + dx, off_y + dy
                 if 0 <= nx < self.width and 0 <= ny < self.height:
                     # 15 en decimal es 'F' en hex (todas las paredes)
-                    self.grid[nx][ny] = 15 
-                    # MUY IMPORTANTE: Marcar como visitado para que el 
+                    self.grid[nx][ny] = 15
+                    # MUY IMPORTANTE: Marcar como visitado para que el
                     # generador no pase por aquí y lo borre
                     self.visited[nx][ny] = True
-            print(f"Patrón '42' inyectado con éxito en offset {offset_elegido}.")
+            print(
+                f"Patrón '42' inyectado con éxito en offset {offset_elegido}.")
         else:
             print("No se encontró una posición libre para el patrón '42'.")
 
@@ -176,7 +183,7 @@ class MazeGenerator():
     def regenerate(self):
         """Reinicia el estado y genera un laberinto
         nuevo con una semilla aleatoria."""
-        self.seed = random.randint(0, 999999)  # Nueva semilla
+        self.seed = random.randint(0, 999999)
         self._rng = random.Random(self.seed)
         # Reset de la estructura
         self.grid = [
