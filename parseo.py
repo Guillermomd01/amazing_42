@@ -1,96 +1,102 @@
+
 import sys
-from typing import Dict
+from typing import Dict, Tuple
 
-def cargar_configuracion(nombre_archivo: str) -> Dict[str, str]:
+
+class MazeConfig:
     """
-    Lee el archivo de configuración y devuelve un diccionario con los datos.
-    Usa un gestor de contexto (with) para evitar fugas de memoria (Requisito III.1).
+    Clase encargada de parsear, validar y almacenar la configuración
+    necesaria para la generación del laberinto.
     """
-    config: Dict[str, str] = {}
-    try:
-        with open(nombre_archivo, 'r') as archivo:
-            for linea in archivo:
-                linea = linea.strip()
-                # Saltamos comentarios o líneas vacías
-                if not linea or linea.startswith("#"):
-                    continue
-                
-                if "=" in linea:
-                    # Dividimos solo por el primer '='
-                    clave, valor = linea.split("=", 1)
-                    config[clave.strip()] = valor.strip()
-                else:
-                    print(f"Aviso: Línea ignorada (formato incorrecto): {linea}")
-    except FileNotFoundError:
-        print(f"Error: El archivo '{nombre_archivo}' no existe.")
-        sys.exit(1)
-    
-    return config
 
-def main() -> None:
-    # IV.2 Uso: El programa debe recibir el archivo como argumento
-    if len(sys.argv) != 2:
-        print("Uso: python3 a_maze_ing.py config.txt")
-        sys.exit(1)
+    def __init__(self, nombre_archivo: str):
+        self.nombre_archivo = nombre_archivo
+        # Atributos que se llenarán tras la carga
+        self.width: int = 0
+        self.height: int = 0
+        self.seed: int = 0
+        self.output_file: str = ""
+        self.entry: Tuple[int, int] = (0, 0)
+        self.exit: Tuple[int, int] = (0, 0)
+        self.is_perfect: bool = False
 
-    nombre_archivo = sys.argv[1]
-    config = cargar_configuracion(nombre_archivo)
+        # Ejecutamos el flujo de carga al instanciar
+        datos_crudos = self._leer_archivo()
+        self._procesar_y_validar(datos_crudos)
 
-    # --- TRANSFORMACIÓN Y VALIDACIÓN (Bloque try-except Requisito III.1) ---
-    try:
-        # Extraemos datos con .get() y valores por defecto para evitar que explote
-        width: int = int(config.get("WIDTH", -1))
-        height: int = int(config.get("HEIGHT", -1))
-        seed: int = int(config.get("SEED", -1))
-        output_file: str = config.get("OUTPUT_FILE", "maze.txt")
-        
-        # Procesamos ENTRY (x,y)
-        raw_entry = config.get("ENTRY", "")
-        partes_entry = raw_entry.split(",")
-        ent_x: int = int(partes_entry[0].strip())
-        ent_y: int = int(partes_entry[1].strip())
+    def _leer_archivo(self) -> Dict[str, str]:
+        """Lee el archivo y extrae los pares clave-valor."""
+        config: Dict[str, str] = {}
+        try:
+            with open(self.nombre_archivo, 'r') as archivo:
+                for linea in archivo:
+                    linea = linea.strip()
+                    if not linea or linea.startswith("#"):
+                        continue
 
-        # Procesamos EXIT (x,y)
-        raw_exit = config.get("EXIT", "")
-        partes_exit = raw_exit.split(",")
-        exit_x: int = int(partes_exit[0].strip())
-        exit_y: int = int(partes_exit[1].strip())
+                    if "=" in linea:
+                        clave, valor = linea.split("=", 1)
+                        config[clave.strip().upper()] = valor.strip()
+        except FileNotFoundError:
+            print(f"Error: El archivo '{self.nombre_archivo}' no existe.")
+            sys.exit(1)
+        return config
 
-        # PERFECT debe ser booleano (IV.3)
-        is_perfect: bool = config.get("PERFECT", "False").lower() == "true"
+    def _procesar_y_validar(self, config: Dict[str, str]) -> None:
+        """Transforma los datos crudos en atributos
+        de clase y aplica lógica de negocio."""
+        try:
+            self.width = int(config.get("WIDTH", -1))
+            self.height = int(config.get("HEIGHT", -1))
+            self.seed = int(config.get("SEED", -1))
+            self.output_file = config.get("OUTPUT_FILE", "maze.txt")
+            self.is_perfect = config.get("PERFECT", "False").lower() == "true"
 
-    except (ValueError, IndexError):
-        print("Error: Formato de datos inválido en el archivo de configuración.")
-        print("Asegúrate de que WIDTH, HEIGHT y SEED sean números, y ENTRY/EXIT tengan el formato x,y")
-        sys.exit(1)
+            # Procesamiento de coordenadas
+            self.entry = self._parsear_coordenadas(config.get("ENTRY", ""))
+            self.exit = self._parsear_coordenadas(config.get("EXIT", ""))
 
-    # --- VALIDACIÓN LÓGICA (Requisitos IV.3 y IV.4) ---
+        except (ValueError, IndexError):
+            print(
+                "Error: Formato de datos inválido en el"
+                "archivo de configuración.")
+            sys.exit(1)
 
-    # 1. Dimensiones positivas
-    if width <= 0 or height <= 0:
-        print("Error: El ancho y alto del laberinto deben ser mayores a 0.")
-        sys.exit(1)
+        self._validar_logica()
 
-    # 2. Entrada y salida dentro de los límites
-    fuera_limites = (
-        ent_x < 0 or ent_x >= width or ent_y < 0 or ent_y >= height or
-        exit_x < 0 or exit_x >= width or exit_y < 0 or exit_y >= height
-    )
-    if fuera_limites:
-        print("Error: La entrada (ENTRY) o salida (EXIT) están fuera del laberinto.")
-        sys.exit(1)
+    def _parsear_coordenadas(self, texto: str) -> Tuple[int, int]:
+        """Helper para convertir 'x,y' en una tupla de enteros."""
+        partes = texto.split(",")
+        return (int(partes[0].strip()), int(partes[1].strip()))
 
-    # 3. Entrada y salida deben ser diferentes (IV.4)
-    if ent_x == exit_x and ent_y == exit_y:
-        print("Error: La entrada y la salida deben ser celdas diferentes.")
-        sys.exit(1)
+    def _validar_logica(self) -> None:
+        """Aplica las reglas de negocio del laberinto."""
+        # 1. Dimensiones
+        if self.width <= 0 or self.height <= 0:
+            print("Error: El ancho y alto deben ser mayores a 0.")
+            sys.exit(1)
 
-    # Si todo está OK
-    print(f"--- Configuración cargada correctamente ---")
-    print(f"Dimensiones: {width}x{height}")
-    print(f"Semilla: {seed}")
-    print(f"Archivo de salida: {output_file}")
-    print(f"¿Es perfecto?: {is_perfect}")
+        # 2. Límites de Entrada/Salida
+        ex, ey = self.entry
+        sx, sy = self.exit
 
+        fuera = (ex < 0 or ex >= self.width or ey < 0 or ey >= self.height or
+                 sx < 0 or sx >= self.width or sy < 0 or sy >= self.height)
+
+        if fuera:
+            print("Error: ENTRY o EXIT están fuera de los límites.")
+            sys.exit(1)
+
+        # 3. Diferencia (Requisito IV.4)
+        if self.entry == self.exit:
+            print("Error: La entrada y la salida deben ser diferentes.")
+            sys.exit(1)
+
+
+# --- Ejemplo de uso si se ejecuta directamente ---
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 2:
+        maze_config = MazeConfig(sys.argv[1])
+        maze_config.mostrar_resumen()
+    else:
+        print("Uso: python3 parseo.py config.txt")
