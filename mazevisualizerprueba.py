@@ -1,5 +1,6 @@
 import os
 import sys
+import random
 try:
     from mlx.mlx import Mlx
 except ImportError:
@@ -11,6 +12,7 @@ class MazeVisualizer():
         self.maze = maze
         self.tile_size = tile_size
         self.solution_path = ""
+        self.show_solution = False
 
         # Generamos el laberinto ANTES de mostrar nada
         self.maze.generate()
@@ -20,7 +22,7 @@ class MazeVisualizer():
         self.win_w = self.maze.width * self.tile_size
         self.win_h = self.maze.height * self.tile_size
         self.win_ptr = self.mlx.mlx_new_window(
-            self.mlx_ptr, self.win_w, self.win_h, "Amazeing Premium v2")
+            self.mlx_ptr, self.win_w, self.win_h, "A-Maze-Ing")
 
         self.img = self.mlx.mlx_new_image(self.mlx_ptr, self.win_w, self.win_h)
         raw_data = self.mlx.mlx_get_data_addr(self.img)
@@ -82,9 +84,10 @@ class MazeVisualizer():
                         self._put_pixel(px, py + i, self.wall_color)
 
         # Dibujar Solución si existe
-        if self.solution_path:
+        if self.solution_path and len(self.solution_path) > 0:
             self._draw_solution()
 
+        self.mlx.mlx_clear_window(self.mlx_ptr, self.win_ptr)
         self.mlx.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, self.img, 0, 0)
 
@@ -105,15 +108,47 @@ class MazeVisualizer():
             elif move == 'W':
                 cx -= 1
 
+    def change_wall_color(self) -> None:
+        """
+        Cambair el color de las paredes aleatoriamente
+
+        :param self: Description
+        """
+        colors = [
+            0xFF8C00,
+            0x8A2BE2,
+            0xFF00FF,
+            0xFFD700,
+            0x1E90FF,
+            0xFF69B4,
+            0x32CD32,
+            0x4B0082,
+            0x7FFF00,
+            0x0000FF
+        ]
+        wall = random.choice(colors)
+        while wall == self.wall_color:
+            wall = random.choice(colors)
+        self.wall_color = wall
+        self.render()
+
     def handle_keys(self, keycode, *args):
         # ESC para salir
         if keycode in [53, 65307]:
             self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
             os._exit(0)
 
-        # 'S' para Solución (keycode 115 o 1)
-        elif keycode in [115, 1, 83]:
-            self.solution_path = self.maze.solve()
+        elif keycode in [115, 1, 83]:  # Tecla 'S'
+            # Si tiene contenido (el string con movimientos)
+            if self.solution_path:
+                self.solution_path = ""
+                print("Solución oculta")
+            else:
+                # Importante: asegúrate de que maze.solve()
+                # devuelva el string de movimientos
+                self.solution_path = self.maze.solve()
+                print("Solución calculada y visible")
+
             self.render()
 
         # 'R' para Reiniciar y Generar nuevo (keycode 114 o 15)
@@ -122,7 +157,9 @@ class MazeVisualizer():
             self.maze.regenerate()
             self.maze.generate()  # Lo generamos al instante
             self.render()
-
+        elif keycode in [99]:
+            print("Change wall color...")
+            self.change_wall_color()
         return 0
 
     def run_animated(self):
