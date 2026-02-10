@@ -1,20 +1,24 @@
 from mazegenerator import MazeGenerator
 from mazevisualizerprueba import MazeVisualizer
-import random
-
+from parseo import MazeConfig
 
 if __name__ == "__main__":
-    # 1. Creamos el objeto, pero NO llamamos a maze.generate() todavía
-    maze = MazeGenerator(20, 20, seed=random.randint(0, 999))
+    config = MazeConfig("config.txt")
 
-    # 2. El visualizador se encargará de llamar a generate_step() frame a frame
-    visualizer = MazeVisualizer(maze, tile_size=25)
-
-    print("Iniciando motor gráfico... Pulsa ESC para salir, R para reiniciar.")
-    visualizer.run_animated()
-
-    """
+    maze = MazeGenerator(
+        config.width, config.height, config.seed, config.exit,
+        config.is_perfect, config.entry)
+    maze. generate()
     maze.display_numeric()
     maze.display_ascii()
-    maze.save("maze_test.txt")
-    print("\n [OK]")"""
+    maze.save(config.output_file)
+    print("\n [OK]")
+
+    visualizer = MazeVisualizer(maze, tile_size=25)
+
+    print("Iniciando motor gráfico...")
+    print(
+        "Pulsa ESC para salir, R para reiniciar,"
+        "S para mostrar/ocultar la solución y "
+        "C para cambiar el color de los muros.")
+    visualizer.run_animated()
