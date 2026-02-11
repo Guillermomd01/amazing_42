@@ -1,6 +1,6 @@
 import random
 from typing import Optional
-
+from collections import deque
 
 class MazeGenerator():
     def __init__(
@@ -136,20 +136,35 @@ class MazeGenerator():
         """
         while self.generate_step():
             pass
+        if not self.perfect:
+            self.add_paths()
+
+    def add_paths(self):
+        """
+        Rompe algunos muros al azar para crear varios caminos.
+        """
+        for _ in range(10):
+            x = self._rng.randint(1, self.width - 2)
+            y = self._rng.randint(1, self.height - 2)
+
+        # Si el muro Este está cerrado (valor 2), lo abrimos
+        if self.grid[x][y] & 2:
+            self.grid[x][y] &= ~2      # Quita muro este de la celda actual
+            self.grid[x+1][y] &= ~8    # Quita muro oeste de la celda de al lado
 
     def solve(self):
-        """Encuentra el camino desde entry hasta exit usando DFS."""
-        stack = [(self.entry, "")]
-        visited = set()
+        """Encuentra el camino más CORTO desde entry hasta exit usando BFS."""
+        # Usamos una cola (deque) para BFS: (posición_actual, camino_recorrido)
+        queue = deque([(self.entry, "")])
+        visited = {self.entry}
 
-        while stack:
-            (cx, cy), path = stack.pop()
+        while queue:
+            (cx, cy), path = queue.popleft()
+
             if (cx, cy) == self.exit:
                 return path
 
-            if (cx, cy) not in visited:
-                visited.add((cx, cy))
-            # Norte (1), Este (2), Sur (4), Oeste (8)
+            # Direcciones: Norte(1), Este(2), Sur(4), Oeste(8)
             moves = [
                 (cx, cy - 1, 1, 'N'),
                 (cx + 1, cy, 2, 'E'),
@@ -158,11 +173,14 @@ class MazeGenerator():
             ]
 
             for nx, ny, bit, direction in moves:
+                # 1. Verificar límites del tablero
                 if 0 <= nx < self.width and 0 <= ny < self.height:
-                    # Si NO hay pared en esa dirección (bit no activo)
+                    # 2. Verificar si NO hay muro en esa dirección
                     if not (self.grid[cx][cy] & bit):
+                        # 3. Si no ha sido visitado, es un candidato para el camino más corto
                         if (nx, ny) not in visited:
-                            stack.append(((nx, ny), path + direction))
+                            visited.add((nx, ny))
+                            queue.append(((nx, ny), path + direction))
         return "NO_SOLUTION"
 
     def save(self, filename: str):
