@@ -1,6 +1,8 @@
 import os
 import sys
 import random
+from mazegenerator import MazeGenerator
+from typing import Any
 try:
     from mlx.mlx import Mlx
 except ImportError:
@@ -8,7 +10,7 @@ except ImportError:
 
 
 class MazeVisualizer():
-    def __init__(self, maze, tile_size=25):
+    def __init__(self, maze: MazeGenerator, tile_size: int = 25):
         self.maze = maze
         self.tile_size = tile_size
         self.solution_path = ""
@@ -35,7 +37,7 @@ class MazeVisualizer():
 
         self.render()
 
-    def _put_pixel(self, x, y, color):
+    def _put_pixel(self, x: int, y: int, color: int) -> None:
         if 0 <= x < self.win_w and 0 <= y < self.win_h:
             offset = (y * self.size_line) + (x * (self.bpp // 8))
             self.img_data[offset] = color & 0xFF
@@ -43,7 +45,7 @@ class MazeVisualizer():
             self.img_data[offset + 2] = (color >> 16) & 0xFF
             self.img_data[offset + 3] = 0xFF
 
-    def _fill_cell(self, x, y, color):
+    def _fill_cell(self, x: int, y: int, color: int) -> None:
         """Rellena el interior de una celda con un color."""
         px, py = x * self.tile_size, y * self.tile_size
         # Dejamos un margen de 2 píxeles para no tapar las paredes
@@ -51,7 +53,7 @@ class MazeVisualizer():
             for j in range(2, self.tile_size - 2):
                 self._put_pixel(px + i, py + j, color)
 
-    def render(self):
+    def render(self) -> None:
         # Limpiar fondo
         for i in range(len(self.img_data)):
             self.img_data[i] = 0
@@ -91,7 +93,7 @@ class MazeVisualizer():
         self.mlx.mlx_put_image_to_window(
             self.mlx_ptr, self.win_ptr, self.img, 0, 0)
 
-    def _draw_solution(self):
+    def _draw_solution(self) -> None:
         cx, cy = self.maze.entry
         center = self.tile_size // 2
         for move in self.solution_path:
@@ -132,7 +134,7 @@ class MazeVisualizer():
         self.wall_color = wall
         self.render()
 
-    def handle_keys(self, keycode, *args):
+    def handle_keys(self, keycode: int, *args: Any) -> int:
         # ESC para salir
         if keycode in [53, 65307]:
             self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
@@ -162,12 +164,12 @@ class MazeVisualizer():
             self.change_wall_color()
         return 0
 
-    def run_animated(self):
+    def run_animated(self) -> None:
         self.mlx.mlx_key_hook(self.win_ptr, self.handle_keys, None)
         self.mlx.mlx_hook(self.win_ptr, 33, 0, self._close_window, None)
         self.mlx.mlx_loop(self.mlx_ptr)
 
-    def _close_window(self, *args):
+    def _close_window(self, *args: Any) -> None:
         """Función interna para cerrar el programa limpiamente."""
         self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
         self.mlx.mlx_release(self.mlx_ptr)
