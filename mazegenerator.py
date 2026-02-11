@@ -2,6 +2,7 @@ import random
 from typing import Optional
 from collections import deque
 
+
 class MazeGenerator():
     def __init__(
         self, width: int,
@@ -25,7 +26,7 @@ class MazeGenerator():
         self._inject_42()
         self.stack = [self.entry]
 
-    def _inject_42(self):
+    def _inject_42(self) -> None:
         """Sella el número 42 buscando una
         ubicación que no pise la entrada/salida."""
         # Tamaño mínimo para que el dibujo quepa con margen
@@ -128,7 +129,7 @@ class MazeGenerator():
 
         return True
 
-    def generate(self):
+    def generate(self) -> None:
         """
         Generación instantánea
 
@@ -139,7 +140,7 @@ class MazeGenerator():
         if not self.perfect:
             self.add_paths()
 
-    def add_paths(self):
+    def add_paths(self) -> None:
         """
         Rompe algunos muros al azar para crear varios caminos.
         """
@@ -149,10 +150,10 @@ class MazeGenerator():
 
         # Si el muro Este está cerrado (valor 2), lo abrimos
         if self.grid[x][y] & 2:
-            self.grid[x][y] &= ~2      # Quita muro este de la celda actual
-            self.grid[x+1][y] &= ~8    # Quita muro oeste de la celda de al lado
+            self.grid[x][y] &= ~2
+            self.grid[x+1][y] &= ~8
 
-    def solve(self):
+    def solve(self) -> str:
         """Encuentra el camino más CORTO desde entry hasta exit usando BFS."""
         # Usamos una cola (deque) para BFS: (posición_actual, camino_recorrido)
         queue = deque([(self.entry, "")])
@@ -177,13 +178,14 @@ class MazeGenerator():
                 if 0 <= nx < self.width and 0 <= ny < self.height:
                     # 2. Verificar si NO hay muro en esa dirección
                     if not (self.grid[cx][cy] & bit):
-                        # 3. Si no ha sido visitado, es un candidato para el camino más corto
+                        # 3. Si no ha sido visitado,
+                        # es un candidato para el camino más corto
                         if (nx, ny) not in visited:
                             visited.add((nx, ny))
                             queue.append(((nx, ny), path + direction))
         return "NO_SOLUTION"
 
-    def save(self, filename: str):
+    def save(self, filename: str) -> None:
         """Exporta al formato oficial con la solución real calculada."""
         solution = self.solve()
         with open(filename, 'w') as f:
@@ -198,7 +200,7 @@ class MazeGenerator():
             f.write(f"{self.exit[0]},{self.exit[1]}\n")
             f.write(f"{solution}\n")
 
-    def regenerate(self):
+    def regenerate(self) -> None:
         """Reinicia el estado y genera un laberinto
         nuevo con una semilla aleatoria."""
         self.seed = random.randint(0, 999999)
@@ -212,15 +214,7 @@ class MazeGenerator():
         self.stack = [self.entry]
         self.visited[self.entry[0]][self.entry[1]] = True
 
-    def display_numeric(self):
-        """Muestra la matriz cruda de bits en hexadecimal."""
-        print("\n--- [DIAGNÓSTICO: MATRIZ DE BITS] ---")
-        for y in range(self.height):
-            for x in range(self.width):
-                print(f"{self.grid[x][y]:X}", end=" ")
-            print()
-
-    def display_ascii(self):
+    def display_ascii(self) -> None:
         """Representación visual del laberinto en la terminal."""
         print("\n--- [VISTA PREVIA DEL PRODUCTO] ---")
         print("#" * (self.width * 2 + 1))
