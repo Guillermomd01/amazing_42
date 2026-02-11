@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mazegenerator"
 version = "1.0.0"
-description = "Reusable maze generator"
+description = "Reusable maze generation engine with BFS solver"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
