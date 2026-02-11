@@ -10,7 +10,7 @@ if __name__ == "__main__":
         config.exit, config.is_perfect,
         config.entry, config.seed)
     maze. generate()
-    maze.display_numeric()
+    # maze.display_numeric()
     maze.display_ascii()
     maze.save(config.output_file)
     print("\n [OK]")
