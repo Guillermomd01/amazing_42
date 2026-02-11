@@ -82,7 +82,8 @@ class MazeGenerator():
                 if 0 <= nx < self.width and 0 <= ny < self.height:
                     self.grid[nx][ny] = 15
                     self.visited[nx][ny] = True
-            msg = f"'42' pattern injected successfully at {chosen_offset}."
+            msg = (f"'42' pattern injected successfully "
+                   f"at {chosen_offset}.")
             print(msg)
         else:
             print("Could not find a free position for '42' pattern.")
