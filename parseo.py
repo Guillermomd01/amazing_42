@@ -91,12 +91,3 @@ class MazeConfig:
         if self.entry == self.exit:
             print("Error: La entrada y la salida deben ser diferentes.")
             sys.exit(1)
-
-
-# --- Ejemplo de uso si se ejecuta directamente ---
-if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        maze_config = MazeConfig(sys.argv[1])
-        maze_config.mostrar_resumen()
-    else:
-        print("Uso: python3 parseo.py config.txt")
