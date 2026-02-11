@@ -1,17 +1,16 @@
-
 import sys
 from typing import Dict, Tuple
 
 
 class MazeConfig:
     """
-    Clase encargada de parsear, validar y almacenar la configuración
-    necesaria para la generación del laberinto.
+    Class responsible for parsing, validating, and storing the
+    configuration needed for maze generation.
     """
 
-    def __init__(self, nombre_archivo: str):
-        self.nombre_archivo = nombre_archivo
-        # Atributos que se llenarán tras la carga
+    def __init__(self, file_name: str):
+        """Initialize the config by reading and processing the file."""
+        self.file_name = file_name
         self.width: int = 0
         self.height: int = 0
         self.seed: int = 0
@@ -20,31 +19,29 @@ class MazeConfig:
         self.exit: Tuple[int, int] = (0, 0)
         self.is_perfect: bool = False
 
-        # Ejecutamos el flujo de carga al instanciar
-        datos_crudos = self._leer_archivo()
-        self._procesar_y_validar(datos_crudos)
+        raw_data = self._read_file()
+        self._process_and_validate(raw_data)
 
-    def _leer_archivo(self) -> Dict[str, str]:
-        """Lee el archivo y extrae los pares clave-valor."""
+    def _read_file(self) -> Dict[str, str]:
+        """Read the configuration file and extract key-value pairs."""
         config: Dict[str, str] = {}
         try:
-            with open(self.nombre_archivo, 'r') as archivo:
-                for linea in archivo:
-                    linea = linea.strip()
-                    if not linea or linea.startswith("#"):
+            with open(self.file_name, 'r') as file:
+                for line in file:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
                         continue
 
-                    if "=" in linea:
-                        clave, valor = linea.split("=", 1)
-                        config[clave.strip().upper()] = valor.strip()
+                    if "=" in line:
+                        key, value = line.split("=", 1)
+                        config[key.strip().upper()] = value.strip()
         except FileNotFoundError:
-            print(f"Error: El archivo '{self.nombre_archivo}' no existe.")
+            print(f"Error: The file '{self.file_name}' does not exist.")
             sys.exit(1)
         return config
 
-    def _procesar_y_validar(self, config: Dict[str, str]) -> None:
-        """Transforma los datos crudos en atributos
-        de clase y aplica lógica de negocio."""
+    def _process_and_validate(self, config: Dict[str, str]) -> None:
+        """Convert raw strings into class attributes and types."""
         try:
             self.width = int(config.get("WIDTH", -1))
             self.height = int(config.get("HEIGHT", -1))
@@ -52,42 +49,38 @@ class MazeConfig:
             self.output_file = config.get("OUTPUT_FILE", "maze.txt")
             self.is_perfect = config.get("PERFECT", "False").lower() == "true"
 
-            # Procesamiento de coordenadas
-            self.entry = self._parsear_coordenadas(config.get("ENTRY", ""))
-            self.exit = self._parsear_coordenadas(config.get("EXIT", ""))
+            self.entry = self._parse_coordinates(config.get("ENTRY", ""))
+            self.exit = self._parse_coordinates(config.get("EXIT", ""))
 
         except (ValueError, IndexError):
-            print(
-                "Error: Formato de datos inválido en el"
-                "archivo de configuración.")
+            print("Error: Invalid data format in the configuration file.")
             sys.exit(1)
 
-        self._validar_logica()
+        self._validate_logic()
 
-    def _parsear_coordenadas(self, texto: str) -> Tuple[int, int]:
-        """Helper para convertir 'x,y' en una tupla de enteros."""
-        partes = texto.split(",")
-        return (int(partes[0].strip()), int(partes[1].strip()))
+    def _parse_coordinates(self, text: str) -> Tuple[int, int]:
+        """Convert a 'x,y' string into an integer tuple."""
+        parts = text.split(",")
+        return (int(parts[0].strip()), int(parts[1].strip()))
 
-    def _validar_logica(self) -> None:
-        """Aplica las reglas de negocio del laberinto."""
-        # 1. Dimensiones
+    def _validate_logic(self) -> None:
+        """Apply business rules and maze constraints."""
         if self.width <= 0 or self.height <= 0:
-            print("Error: El ancho y alto deben ser mayores a 0.")
+            print("Error: Width and height must be greater than 0.")
             sys.exit(1)
 
-        # 2. Límites de Entrada/Salida
         ex, ey = self.entry
         sx, sy = self.exit
 
-        fuera = (ex < 0 or ex >= self.width or ey < 0 or ey >= self.height or
-                 sx < 0 or sx >= self.width or sy < 0 or sy >= self.height)
+        out_of_bounds = (ex < 0 or ex >= self.width or
+                         ey < 0 or ey >= self.height or
+                         sx < 0 or sx >= self.width or
+                         sy < 0 or sy >= self.height)
 
-        if fuera:
-            print("Error: ENTRY o EXIT están fuera de los límites.")
+        if out_of_bounds:
+            print("Error: ENTRY or EXIT are out of grid bounds.")
             sys.exit(1)
 
-        # 3. Diferencia (Requisito IV.4)
         if self.entry == self.exit:
-            print("Error: La entrada y la salida deben ser diferentes.")
+            print("Error: ENTRY and EXIT must be different locations.")
             sys.exit(1)
