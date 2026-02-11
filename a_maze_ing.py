@@ -1,5 +1,5 @@
 from mazegenerator import MazeGenerator
-from mazevisualizer import MazeVisualizer
+from mazevisualizerprueba import MazeVisualizer
 from parseo import MazeConfig
 
 if __name__ == "__main__":
