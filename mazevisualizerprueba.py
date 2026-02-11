@@ -164,4 +164,11 @@ class MazeVisualizer():
 
     def run_animated(self):
         self.mlx.mlx_key_hook(self.win_ptr, self.handle_keys, None)
+        self.mlx.mlx_hook(self.win_ptr, 33, 0, self._close_window, None)
         self.mlx.mlx_loop(self.mlx_ptr)
+
+    def _close_window(self, *args):
+        """Función interna para cerrar el programa limpiamente."""
+        self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
+        self.mlx.mlx_release(self.mlx_ptr)
+        os._exit(0)
