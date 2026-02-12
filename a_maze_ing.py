@@ -1,6 +1,6 @@
 from mazegenerator import MazeGenerator
 from mazevisualizer import MazeVisualizer
-from parseo import MazeConfig
+from parser import MazeConfig
 
 if __name__ == "__main__":
     config = MazeConfig("config.txt")
