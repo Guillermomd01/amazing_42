@@ -17,7 +17,7 @@ Regarding task distribution, we decided to divide the project by objectives, wit
 **Instructions: Compilation and Installation**
 
 **Prerequisites**
-* Python 3.7 or higher.
+* Python 3.10 or higher.
 * Packaging tools: `pip install build`.
 
 **Virtual Environment (VENV)**
