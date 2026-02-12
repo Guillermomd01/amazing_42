@@ -1,107 +1,111 @@
 # A-Maze-ing Project 🧩
 
-*Este proyecto ha sido creado como parte del currículo de 42 por gumunoz, savaquer.*
+*This project has been created as part of the 42 curriculum by gumunoz and savaquer.*
 
 ---
 
-**Descripción del Proyecto**
+**Project Description**
 
-El propósito de este proyecto es el diseño y desarrollo de un sistema completo para la **generación, resolución y visualización de laberintos**. El sistema permite crear laberintos "perfectos" (un solo camino entre dos puntos) o "imperfectos" mediante la configuración de parámetros externos. Además, incluye un sistema único de inyección de patrones estáticos (el número "42") dentro de la estructura generada.
+The goal of this project is the design and development of a comprehensive system for **maze generation, solving, and visualization**. The engine allows for the creation of "perfect" mazes (a single unique path between two points) or "imperfect" mazes through external configuration parameters. Additionally, it features a unique static pattern injection system that embeds the number "42" into the generated structure.
 
 ---
 
-**Instrucciones: Compilación e Instalación**
+**Project Management**
 
-**Requisitos previos**
-* Python 3.7 o superior.
-* Herramientas de empaquetado: `pip install build`.
+Regarding task distribution, we decided to divide the project by objectives, with both members working on each. This approach ensures that every team member masters the core pillars: algorithms, the graphics engine, and parsing.
 
-**Entorno Virtual (VENV)**
-Para garantizar un entorno de ejecución limpio y evitar conflictos con librerías globales, el proyecto utiliza un entorno virtual (`venv`):
-* El `Makefile` crea automáticamente la carpeta `venv/` al ejecutar la instalación.
-* Se instalan todas las dependencias (como `flake8`, `mypy` o la `mlx`) dentro de este entorno aislado.
-* No es necesario activar el entorno manualmente si se utiliza `make`, ya que el script apunta directamente al binario interno.
+**Instructions: Compilation and Installation**
 
-**Compilación e Instalación**
-El proyecto utiliza un `Makefile` para gestionar el entorno virtual y las dependencias de forma automática. Para preparar el entorno virtual e instalar las dependencias necesarias, ejecuta:
+**Prerequisites**
+* Python 3.7 or higher.
+* Packaging tools: `pip install build`.
+
+**Virtual Environment (VENV)**
+To ensure a clean execution environment and avoid conflicts with global libraries, the project utilizes a virtual environment (`venv`):
+* The `Makefile` automatically creates the `venv/` folder upon installation.
+* All dependencies (such as `flake8`, `mypy`, or the `mlx` library) are installed within this isolated environment.
+* There is no need to activate the environment manually if using `make`, as the script points directly to the internal binary.
+
+**Compilation and Installation**
+The project uses a `Makefile` to handle the virtual environment and dependencies automatically. To prepare the virtual environment and install necessary dependencies, run:
 `make install`
 
-**Ejecución del programa**
-Para generar y visualizar el laberinto utilizando el archivo de configuración `config.txt`:
-`make` o `make run`
+**Running the Program**
+To generate and visualize the maze using the `config.txt` configuration file:
+`make` or `make run`
 
-**Control de Calidad (Linters)**
-Para verificar la consistencia del código y tipos (Flake8 y Mypy):
+**Quality Control (Linters)**
+To verify code consistency and typing (Flake8 and Mypy):
 `make lint`
 
-**Limpieza**
-Para eliminar el entorno virtual y archivos temporales de caché:
+**Cleanup**
+To remove the virtual environment and temporary cache files:
 `make clean`
 
 ---
 
-**Generación del Paquete (mazegen.tar.gz)**
-1. Navega a la carpeta del proyecto.
-2. Ejecuta el comando: `python3 -m build`.
-3. El archivo solicitado `mazegen.tar.gz` aparecerá dentro de la carpeta `/dist`.
+**Package Generation (mazegen.tar.gz)**
+1. Navigate to the project folder.
+2. Run the command: `python3 -m build`.
+3. The requested file `mazegen.tar.gz` will appear inside the `/dist` folder.
 
-**Ejecución del programa principal (Manual)**
-Para generar y visualizar el laberinto configurado en el archivo de texto directamente desde la terminal:
+**Manual Execution**
+To generate and visualize the maze directly from the terminal using the configuration file:
 `python3 a_maze_ing.py config.txt`
 
 ---
 
-**Archivo de Configuración (config.txt)**
+**Configuration File (config.txt)**
 
-El programa utiliza un archivo de texto plano para definir el comportamiento. Formato: `CLAVE=VALOR`.
+The program uses a plain text file to define its behavior. Format: `KEY=VALUE`.
 
-| Clave | Descripción | Ejemplo |
+| Key | Description | Example |
 | :--- | :--- | :--- |
-| **WIDTH** | Ancho del laberinto (entero positivo). | `WIDTH=30` |
-| **HEIGHT** | Alto del laberinto (entero positivo). | `HEIGHT=20` |
-| **SEED** | Semilla para replicabilidad (opcional). | `SEED=12345` |
-| **ENTRY** | Coordenadas x,y de entrada (exactamente 2). | `ENTRY=0,0` |
-| **EXIT** | Coordenadas x,y de salida (exactamente 2). | `EXIT=29,19` |
-| **PERFECT** | `True` (camino único) o `False` (ciclos). | `PERFECT=True` |
-| **OUTPUT_FILE** | Nombre del archivo de guardado. | `OUTPUT_FILE=maze.txt` |
+| **WIDTH** | Maze width (positive integer). | `WIDTH=30` |
+| **HEIGHT** | Maze height (positive integer). | `HEIGHT=20` |
+| **SEED** | Seed for replicability (optional). | `SEED=12345` |
+| **ENTRY** | Entry x,y coordinates (exactly 2). | `ENTRY=0,0` |
+| **EXIT** | Exit x,y coordinates (exactly 2). | `EXIT=29,19` |
+| **PERFECT** | `True` (unique path) or `False` (cycles). | `PERFECT=True` |
+| **OUTPUT_FILE** | Name of the output save file. | `OUTPUT_FILE=maze.txt` |
 
 ---
 
-**Algoritmos Utilizados**
+**Core Algorithms**
 
-**1. Generación: Randomized Backtracking (DFS)**
-Se utiliza una búsqueda en profundidad para tallar los pasillos del laberinto.
-* **Garantía de Perfección**: Crea un árbol de expansión que asegura que no hay celdas aisladas.
-* **Estructura**: Genera pasillos largos y complejos.
-* **Restricción 3x3**: Al avanzar paso a paso entre celdas adyacentes, el algoritmo impide por diseño la formación de áreas vacías de 3x3.
+**1. Generation: Randomized Backtracking (DFS)**
+A Depth-First Search is used to carve the maze corridors.
+* **Guaranteed Perfection**: Creates a spanning tree that ensures no isolated cells.
+* **Structure**: Generates long, complex corridors.
+* **3x3 Constraint**: By moving step-by-step between adjacent cells, the algorithm is designed to prevent the formation of empty 3x3 areas.
 
-**2. Resolución: Breadth First Search (BFS)**
-Para calcular la solución óptima (el camino más corto entre entrada y salida), el programa implementa un algoritmo de búsqueda en anchura.
-* **Optimización**: A diferencia de DFS, BFS garantiza encontrar el camino más corto en un grafo sin pesos.
-* **Visualización**: Se activa mediante la tecla 'S' en el visualizador gráfico.
-
----
-
-**Módulo Reutilizable: mazegenerator**
-
-El módulo es totalmente autónomo y robusto:
-* **Replicabilidad**: El uso de `random.Random(seed)` asegura resultados idénticos con la misma semilla.
-* **Patrón 42**: Función `_inject_42()` que reserva celdas antes de la generación para formar el patrón si el tamaño es suficiente.
+**2. Solving: Breadth-First Search (BFS)**
+To calculate the optimal solution (the shortest path between entry and exit), the program implements a BFS algorithm.
+* **Optimization**: Unlike DFS, BFS guarantees finding the shortest path in an unweighted graph.
+* **Visualization**: Activated by pressing the 'S' key in the graphical visualizer.
 
 ---
 
-**Recursos y Bibliografía**
+**Reusable Module: mazegenerator**
 
-**Referencias y Tutoriales**
-* **Algoritmos**: Tutoriales de YouTube sobre *Depth First Search* (DFS) para generación y *Breadth First Search* (BFS) para resolución.
-* **Gráficos**: Documentación de la librería **MiniLibX (MLX)** para la gestión de ventanas y buffers de imagen.
-* **Tutoriales MLX**: Guías de la comunidad de 42 para el manejo de eventos de teclado y colores.
+The module is completely autonomous and robust:
+* **Replicability**: The use of `random.Random(seed)` ensures identical results with the same seed.
+* **42 Pattern**: The `_inject_42()` function reserves cells before generation to form the pattern if the dimensions allow.
+
+---
+
+**Resources and Bibliography**
+
+**References and Tutorials**
+* **Algorithms**: YouTube tutorials on *Depth First Search* (DFS) for generation and *Breadth First Search* (BFS) for solving.
+* **Graphics**: **MiniLibX (MLX)** library documentation for window management and image buffers.
+* **MLX Tutorials**: 42 community guides for keyboard event handling and color management.
   
 ---
 
-**Uso de Inteligencia Artificial (IA)**
-Se utilizó **Gemini (IA)** como asistente de programación en:
-* **Verificaciones**: Lógica estricta para que el programa falle si se introducen datos incoherentes.
-* **Docstrings**: Creación de documentación interna siguiendo estándares de Python.
-* **Dudas Técnicas**: Resolución de problemas sobre la implementación de BFS para la solución y estructuración del paquete.
-* **Readmes**: Estructuración y formato técnico de la documentación del proyecto.
+**Use of Artificial Intelligence (AI)**
+**Gemini (AI)** was used as a programming assistant for:
+* **Validation**: Strict logic to ensure the program fails gracefully if inconsistent data is provided.
+* **Docstrings**: Creation of internal documentation following Python standards.
+* **Technical Inquiries**: Problem-solving regarding BFS implementation for the solution and package structuring.
+* **Readmes**: Structuring and technical formatting of the project documentation.
