@@ -1,8 +1,10 @@
 from mazegenerator import MazeGenerator
 from mazevisualizer import MazeVisualizer
 from parser import MazeConfig
+import sys
 
-if __name__ == "__main__":
+
+def main() -> None:
     config = MazeConfig("config.txt")
 
     maze = MazeGenerator(
@@ -23,3 +25,10 @@ if __name__ == "__main__":
         "S para mostrar/ocultar la solución y "
         "C para cambiar el color de los muros.")
     visualizer.run_animated()
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("ERROR: wrong number of arguments")
+        sys.exit(2)
+    main()
