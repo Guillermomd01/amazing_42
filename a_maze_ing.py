@@ -2,9 +2,22 @@ from mazegenerator import MazeGenerator
 from mazevisualizer import MazeVisualizer
 from parser import MazeConfig
 import sys
+import os
 
 
 def main() -> None:
+    file_required = "config.txt"
+
+    if len(sys.argv) != 2:
+        print("ERROR: wrong number of arguments")
+        sys.exit(2)
+
+    file_argument = os.path.basename(sys.argv[1])
+
+    if file_argument != file_required:
+        print("ERROR: config.txt not found ")
+        sys.exit(1)
+
     config = MazeConfig("config.txt")
 
     maze = MazeGenerator(
@@ -28,7 +41,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("ERROR: wrong number of arguments")
-        sys.exit(2)
     main()
