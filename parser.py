@@ -42,25 +42,35 @@ class MazeConfig:
 
     def _process_and_validate(self, config: Dict[str, str]) -> None:
         """Convert raw strings into class attributes and types."""
+        mandatory = ["WIDTH", "HEIGHT", "PERFECT", "OUTPUT_FILE",
+                     "ENTRY", "EXIT"]
+        for field in mandatory:
+            if field not in config:
+                print(f"Error: Missing mandatory field '{field}' in config.")
+                sys.exit(1)
+
         try:
-            self.width = int(config.get("WIDTH", -1))
-            self.height = int(config.get("HEIGHT", -1))
-            self.seed = int(config.get("SEED", -1))
-            self.output_file = config.get("OUTPUT_FILE", "maze.txt")
-            self.is_perfect = config.get("PERFECT", "False").lower() == "true"
+            self.width = int(config["WIDTH"])
+            self.height = int(config["HEIGHT"])
+            self.seed = int(config.get("SEED", 0))
+            self.output_file = config["OUTPUT_FILE"]
+            self.is_perfect = config["PERFECT"].lower() == "true"
 
-            self.entry = self._parse_coordinates(config.get("ENTRY", ""))
-            self.exit = self._parse_coordinates(config.get("EXIT", ""))
+            self.entry = self._parse_coordinates(config["ENTRY"])
+            self.exit = self._parse_coordinates(config["EXIT"])
 
-        except (ValueError, IndexError):
-            print("Error: Invalid data format in the configuration file.")
+        except ValueError:
+            print("Error: Invalid data format.")
             sys.exit(1)
 
         self._validate_logic()
 
     def _parse_coordinates(self, text: str) -> Tuple[int, int]:
-        """Convert a 'x,y' string into an integer tuple."""
+        """Convert a 'x,y' string into an integer tuple with strict check."""
         parts = text.split(",")
+        if len(parts) != 2:
+            print(f"Error: Coordinate '{text}' must have exactly two values.")
+            sys.exit(1)
         return (int(parts[0].strip()), int(parts[1].strip()))
 
     def _validate_logic(self) -> None:
