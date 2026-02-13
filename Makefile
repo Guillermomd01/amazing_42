@@ -5,7 +5,7 @@ PIP = $(VENV)/bin/pip
 MAIN = a_maze_ing.py
 CONFIG_FILE = config.txt
 REQUIREMENTS = requirements.txt
-FILES = mazevisualizer.py mazegenerator.py parseo.py
+FILES = mazevisualizer.py mazegenerator.py parser.py
 
 all: banner install run
 
