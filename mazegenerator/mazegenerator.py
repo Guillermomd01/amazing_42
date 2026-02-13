@@ -131,10 +131,9 @@ class MazeGenerator():
         for _ in range(10):
             x = self._rng.randint(1, self.width - 2)
             y = self._rng.randint(1, self.height - 2)
-
-        if self.grid[x][y] & 2:
-            self.grid[x][y] &= ~2
-            self.grid[x + 1][y] &= ~8
+            if self.grid[x][y] & 2:
+                self.grid[x][y] &= ~2
+                self.grid[x + 1][y] &= ~8
 
     def solve(self) -> str:
         """Finds the shortest path from entry to exit using BFS."""
