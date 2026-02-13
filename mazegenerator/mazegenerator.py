@@ -34,6 +34,7 @@ class MazeGenerator():
     def _inject_42(self) -> None:
         """Injects a static '42' pattern into the grid."""
         min_w, min_h = 15, 10
+        self.logo_cells = set()
         if self.width < min_w or self.height < min_h:
             print(
                 f"Error: Size {self.width}x{self.height} "
@@ -82,6 +83,7 @@ class MazeGenerator():
                 if 0 <= nx < self.width and 0 <= ny < self.height:
                     self.grid[nx][ny] = 15
                     self.visited[nx][ny] = True
+                    self.logo_cells.add((nx, ny))
             msg = (f"'42' pattern injected successfully "
                    f"at {chosen_offset}.")
             print(msg)
@@ -128,12 +130,23 @@ class MazeGenerator():
 
     def add_paths(self) -> None:
         """Breaks random walls to create multiple paths in the maze."""
-        for _ in range(10):
-            x = self._rng.randint(1, self.width - 2)
-            y = self._rng.randint(1, self.height - 2)
-            if self.grid[x][y] & 2:
-                self.grid[x][y] &= ~2
-                self.grid[x + 1][y] &= ~8
+        intentos = (self.width * self.height) // 20
+
+        for _ in range(intentos):
+            x = self._rng.randint(0, self.width - 2)
+            y = self._rng.randint(0, self.height - 2)
+            if self._rng.choice([True, False]):
+                if (x, y) not in self.logo_cells:
+                    if (x + 1, y) not in self.logo_cells:
+                        if self.grid[x][y] & 2:
+                            self.grid[x][y] &= ~2
+                            self.grid[x + 1][y] &= ~8
+            else:
+                if (x, y) not in self.logo_cells:
+                    if (x, y + 1) not in self.logo_cells:
+                        if self.grid[x][y] & 4:
+                            self.grid[x][y] &= ~4
+                            self.grid[x][y + 1] &= ~1
 
     def solve(self) -> str:
         """Finds the shortest path from entry to exit using BFS."""
