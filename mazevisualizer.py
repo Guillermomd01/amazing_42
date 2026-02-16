@@ -60,6 +60,16 @@ class MazeVisualizer():
         """Draw the entire maze, solution, and player to the window."""
         for i in range(len(self.img_data)):
             self.img_data[i] = 0
+        
+        if self.won:
+            self.mlx.mlx_clear_window(self.mlx_ptr, self.win_ptr)
+            self.mlx.mlx_put_image_to_window(
+                self.mlx_ptr, self.win_ptr, self.img, 0, 0)
+            
+            self.mlx.mlx_string_put(self.mlx_ptr, self.win_ptr, 
+                                    (self.win_w // 2) - 30, self.win_h // 2, 
+                                    0xFFFF00, "YOU WON!")
+            return
 
         self._fill_cell(
             self.maze.entry[0], self.maze.entry[1], self.start_color)
@@ -183,6 +193,7 @@ class MazeVisualizer():
             self.render()
 
         elif keycode in [114, 15, 82]:
+            self.won = False
             self.solution_path = ""
             self.maze.regenerate()
             self.maze.generate()
